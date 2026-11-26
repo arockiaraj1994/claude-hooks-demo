@@ -1,8 +1,10 @@
 """Run each hook the way Claude Code does: JSON on stdin, then read the answer."""
 
 import json
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -11,12 +13,14 @@ HOOKS = Path(__file__).parent.parent / "hooks"
 
 
 def run(hook: str, event: dict, cwd: Path | None = None) -> subprocess.CompletedProcess:
+    log_dir = cwd or Path(tempfile.mkdtemp())
     return subprocess.run(
         [sys.executable, str(HOOKS / hook)],
         input=json.dumps(event),
         capture_output=True,
         text=True,
         cwd=cwd,
+        env={**os.environ, "CLAUDE_PROJECT_DIR": str(log_dir)},
     )
 
 
@@ -85,3 +89,10 @@ def test_session_warns_on_main(tmp_path):
 def test_session_ok_on_feature_branch(tmp_path):
     answer = json.loads(run("session_check.py", {}, cwd=git_repo(tmp_path, "feat/demo")).stdout)
     assert "✅ On branch feat/demo" in answer["systemMessage"]
+
+
+def test_log_line_never_has_the_prompt(tmp_path):
+    run("prompt_guard.py", {"prompt": "My key is AKIAEXAMPLEKEY000000"}, cwd=tmp_path)
+    line = (tmp_path / "hooks.log").read_text()
+    assert "UserPromptSubmit" in line and "block" in line and "an AWS access key" in line
+    assert "AKIAEXAMPLE" not in line

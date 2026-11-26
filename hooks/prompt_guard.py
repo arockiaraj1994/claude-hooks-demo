@@ -6,8 +6,11 @@ We answer with an exit code:
 """
 
 import json
+import os
 import re
 import sys
+import time
+from pathlib import Path
 
 # What a prompt must not contain: "what it is": pattern. All values here are fake examples.
 RULES = {
@@ -19,6 +22,15 @@ RULES = {
     "an Indian mobile number": r"(?:\+91[ -]?)?\b[6-9]\d{4}[ -]?\d{5}\b",
     "a blocked word": r"(?i)project kaveri|project marina",
 }
+
+EVENT = "UserPromptSubmit"
+
+
+def log(decision: str, detail: str = "") -> None:
+    """Add one line to hooks.log, so you can watch the hooks work. Never the prompt itself."""
+    line = f"{time.strftime('%H:%M:%S')}  {EVENT:<16}  {decision:<5}  {detail}\n"
+    with open(Path(os.environ.get("CLAUDE_PROJECT_DIR", ".")) / "hooks.log", "a") as f:
+        f.write(line)
 
 
 def main() -> int:
@@ -34,9 +46,11 @@ def main() -> int:
 
     # 3. Nothing found: send it.
     if not problems:
+        log("allow")
         return 0
 
     # 4. Found something: block it, and do not repeat the prompt on screen.
+    log("block", ", ".join(p.split(" (")[0] for p in problems))
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "suppressOriginalPrompt": True}}))
     print("Blocked: this prompt looks like it contains", file=sys.stderr)
     for problem in problems:

@@ -5,8 +5,11 @@ reason and tries another way. If we print nothing, the command runs.
 """
 
 import json
+import os
 import re
 import sys
+import time
+from pathlib import Path
 
 # "reason Claude sees": pattern
 RULES = {
@@ -18,6 +21,15 @@ RULES = {
     "this project uses uv: run `uv add <package>` instead of pip install": r"\bpip3?\s+install\b",
 }
 
+EVENT = "PreToolUse"
+
+
+def log(decision: str, detail: str = "") -> None:
+    """Add one line to hooks.log, so you can watch the hooks work. Never the prompt itself."""
+    line = f"{time.strftime('%H:%M:%S')}  {EVENT:<16}  {decision:<5}  {detail}\n"
+    with open(Path(os.environ.get("CLAUDE_PROJECT_DIR", ".")) / "hooks.log", "a") as f:
+        f.write(line)
+
 
 def main() -> int:
     # 1. Read the command.
@@ -28,9 +40,11 @@ def main() -> int:
 
     # 3. Nothing broken: print nothing, the command runs.
     if not broken:
+        log("allow", command[:60])
         return 0
 
     # 4. Deny it and tell Claude why.
+    log("deny", "; ".join(broken))
     reason = "Blocked by a project hook: " + "; ".join(broken) + ". Find a way without it."
     answer = {
         "hookSpecificOutput": {

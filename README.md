@@ -41,6 +41,7 @@ echo '{}' | python3 hooks/session_check.py
 
 ## Other files
 
+- `hooks.log`: each hook adds one line per decision (never the prompt). Watch it with `tail -f hooks.log`.
 - `watch_api.py`: prints how much data the demo session sends to Claude's servers (Linux, uses `ss`).
   A blocked prompt prints nothing: it never left the laptop.
 - `app.py`: a tiny app, so Claude has something to look at.

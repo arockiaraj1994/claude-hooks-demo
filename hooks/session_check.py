@@ -10,9 +10,21 @@ The JSON we print has two parts:
 """
 
 import json
+import os
 import shutil
 import subprocess
 import sys
+import time
+from pathlib import Path
+
+EVENT = "SessionStart"
+
+
+def log(decision: str, detail: str = "") -> None:
+    """Add one line to hooks.log, so you can watch the hooks work. Never the prompt itself."""
+    line = f"{time.strftime('%H:%M:%S')}  {EVENT:<16}  {decision:<5}  {detail}\n"
+    with open(Path(os.environ.get("CLAUDE_PROJECT_DIR", ".")) / "hooks.log", "a") as f:
+        f.write(line)
 
 
 def main() -> int:
@@ -33,7 +45,8 @@ def main() -> int:
         branch = f"✅ On branch {branch_name or '(none)'}"
         note = "Work is on a feature branch."
 
-    # 3. Answer: messages for you, a note for Claude.
+    # 3. Log, then answer: messages for you, a note for Claude.
+    log("warn" if "⚠️" in tools + branch else "ok", f"branch {branch_name or '(none)'}")
     answer = {
         "systemMessage": tools + "\n" + branch,
         "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": note},

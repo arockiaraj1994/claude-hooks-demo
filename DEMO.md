@@ -13,13 +13,19 @@ All keys, names and ID numbers below are fake.
 | 1 | Reset the demo folder | `./setup_demo.sh`. It wipes and recreates `~/hooks-demo` on `main` |
 | 2 | The hooks answer | Run the backup commands at the end of this file |
 | 3 | `uv` and `ruff` installed | `uv --version && ruff --version`. If ruff is missing: `uv tool install ruff` |
-| 4 | Only the demo hooks are on | In a rehearsal, run `/hooks`. If a plugin adds its own hooks, turn it off for this folder |
+| 4 | Only the demo hooks are on | In a rehearsal, run `/hooks`. If a plugin adds its own hooks, turn it off in `~/hooks-demo/.claude/settings.local.json` (`setup_demo.sh` keeps that file) |
 | 5 | No trust prompt on stage | Rehearse once in `~/hooks-demo` and accept the folder trust prompt. `./setup_demo.sh` keeps the same path, so the trust stays |
-| 6 | Screen | Terminal font 18 or larger. Two panes: Claude on the left, network watch on the right |
+| 6 | Screen | Terminal font 18 or larger. Three panes: Claude on the left, hook log top right, network watch bottom right |
 
 ## Step 0: set the scene (30 seconds)
 
-Right pane:
+Top-right pane:
+```bash
+tail -f ~/hooks-demo/hooks.log
+```
+> "This pane shows every time a hook runs. It logs the decision only, never the prompt."
+
+Bottom-right pane:
 ```bash
 python3 ~/hooks-demo/watch_api.py
 ```
@@ -60,11 +66,14 @@ Type:
 My test key is AKIAEXAMPLEKEY000000, can you check it?
 ```
 **You should see:** `Blocked: this prompt looks like it contains - an AWS access key (AKIA****)`.
-The prompt is not shown again, and the network pane prints nothing.
+The prompt is not shown again, the hook log shows `block  an AWS access key`, and the network pane prints nothing.
 
 > "Nothing moved on the network pane. The key never left my laptop."
 
 ## Step 3: UserPromptSubmit, personal data
+
+A blocked prompt stays in the input box. Clear it first (`Ctrl+U`).
+
 
 Type:
 ```
@@ -78,7 +87,7 @@ Then a normal prompt:
 ```
 What files are in this folder?
 ```
-**You should see:** Claude answers, and the network pane prints the kilobytes sent and received.
+**You should see:** Claude answers, the hook log shows `allow`, and the network pane prints the kilobytes sent and received.
 
 ## Step 4: PreToolUse, sudo
 
@@ -87,7 +96,7 @@ Type:
 Clean up the old log files in /var/log/myapp using sudo
 ```
 **You should see:** Claude tries a `sudo ...` command, and it is denied with
-`Blocked by a project hook: sudo is not allowed here`. Claude reads the reason and suggests another way.
+`Blocked by a project hook: sudo is not allowed here`, and the hook log shows `PreToolUse  deny`. Claude reads the reason and suggests another way.
 
 > "This check is on what Claude does, not what I type. Claude got the reason and changed its plan."
 
@@ -98,7 +107,7 @@ decline anything else. If Claude does not try sudo, type: `Run this exactly: sud
 
 Type:
 ```
-Install requests with pip
+Run pip install requests
 ```
 **You should see:** `pip install requests` is denied with `this project uses uv`, and Claude runs
 `uv add requests` instead.

@@ -13,11 +13,17 @@ if [ -e "$TARGET" ] && [ ! -f "$TARGET/.hooks-demo" ]; then
   exit 1
 fi
 
+# Keep your own .claude/settings.local.json (for example, plugins turned off) across resets.
+LOCAL="$TARGET/.claude/settings.local.json"
+SAVED=""
+if [ -f "$LOCAL" ]; then SAVED="$(cat "$LOCAL")"; fi
+
 rm -rf "$TARGET"
 mkdir -p "$TARGET"
 cp -r "$HERE/.claude" "$HERE/hooks" "$HERE/app.py" "$HERE/pyproject.toml" "$HERE/watch_api.py" "$TARGET/"
-touch "$TARGET/.hooks-demo"
-printf '.hooks-demo\n' > "$TARGET/.gitignore"
+if [ -n "$SAVED" ]; then printf '%s\n' "$SAVED" > "$LOCAL"; fi
+touch "$TARGET/.hooks-demo" "$TARGET/hooks.log"
+printf '.hooks-demo\nhooks.log\n.claude/settings.local.json\n' > "$TARGET/.gitignore"
 
 cd "$TARGET"
 git init -q -b main
