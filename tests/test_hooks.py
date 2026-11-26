@@ -58,6 +58,8 @@ def test_prompt_allowed():
         ("cat .env", "reading .env"),
         ("git push --force origin main", "force-pushing to main"),
         ("psql -c 'DROP TABLE users'", "dropping or deleting"),
+        ("python3 db.py \"DELETE FROM fees WHERE year = 2024\"", "dropping or deleting"),
+        ("psql -c 'TRUNCATE fees'", "dropping or deleting"),
         ("pip install requests", "uv add"),
     ],
 )
@@ -68,7 +70,7 @@ def test_command_denied(command, reason):
     assert reason in answer["permissionDecisionReason"]
 
 
-@pytest.mark.parametrize("command", ["ls -la", "uv add requests", "git push origin feat/demo", "rm old.log"])
+@pytest.mark.parametrize("command", ["python3 db.py \"SELECT * FROM fees\"", "ls -la", "uv add requests", "git push origin feat/demo", "rm old.log"])
 def test_command_allowed(command):
     result = run("command_guard.py", {"tool_input": {"command": command}})
     assert result.returncode == 0 and result.stdout == ""

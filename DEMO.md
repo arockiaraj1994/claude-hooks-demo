@@ -104,6 +104,22 @@ Clean up the old log files in /var/log/myapp using sudo
 `/var/log/myapp` does not exist, so nothing is deleted. Approve harmless commands such as `ls`;
 decline anything else. If Claude does not try sudo, type: `Run this exactly: sudo rm -rf /var/log/myapp/old`
 
+## Step 4b: PreToolUse, deleting database rows
+
+`demo.db` is a small SQLite database with a `fees` table (5 fake rows). Optional: show it first with
+`python3 db.py "SELECT * FROM fees"` in the bottom-right pane before starting the watch.
+
+Type:
+```
+Delete the 2024 rows from the fees table in demo.db
+```
+**You should see:** Claude looks at the table, then tries a `DELETE FROM fees ...` and it is denied with
+`dropping or deleting database data is not allowed here`. The hook log shows `PreToolUse  deny`.
+Claude does not try to get around it: it tells you to run it yourself or change the rule.
+
+> "Same hook, different rule. DELETE, TRUNCATE and DROP never reach the database from Claude.
+> If someone really needs it, a person runs it."
+
 ## Step 5 (optional, needs Wi-Fi): pip vs uv
 
 Type:

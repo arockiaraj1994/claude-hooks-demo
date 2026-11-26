@@ -7,7 +7,7 @@ Three small [Claude Code hooks](https://code.claude.com/docs/en/hooks), from the
 |---|---|---|
 | [`session_check.py`](hooks/session_check.py) | **SessionStart**: when Claude Code opens | Checks `uv` and `ruff` are installed and warns if you are on `main`. Never blocks |
 | [`prompt_guard.py`](hooks/prompt_guard.py) | **UserPromptSubmit**: before a prompt is sent | Blocks prompts with an AWS key, password, Aadhaar, PAN, mobile number or blocked word |
-| [`command_guard.py`](hooks/command_guard.py) | **PreToolUse**: before Claude runs a shell command | Denies `sudo`, `rm -rf`, reading `.env`, force-push to `main`, SQL `DROP`/`DELETE`, `pip install` |
+| [`command_guard.py`](hooks/command_guard.py) | **PreToolUse**: before Claude runs a shell command | Denies `sudo`, `rm -rf`, reading `.env`, force-push to `main`, SQL `DROP`/`DELETE`/`TRUNCATE`, `pip install` |
 
 [`.claude/settings.json`](.claude/settings.json) turns them on for this folder only.
 
@@ -45,6 +45,7 @@ echo '{}' | python3 hooks/session_check.py
 - `watch_api.py`: prints how much data the demo session sends to Claude's servers (Linux, uses `ss`).
   A blocked prompt prints nothing: it never left the laptop.
 - `app.py`: a tiny app, so Claude has something to look at.
+- `db.py`: runs one SQL query on `demo.db`, a small SQLite database with a fake `fees` table (created on first run).
 - `tests/test_hooks.py`: `uv run pytest`.
 
 All keys, names and ID numbers in this repo are fake. These hooks are examples for a talk, not a
