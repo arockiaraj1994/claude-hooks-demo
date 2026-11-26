@@ -14,6 +14,7 @@ All keys, names and ID numbers below are fake.
 | 2 | The hooks answer | Run the backup commands at the end of this file |
 | 3 | `uv` and `ruff` installed | `uv --version && ruff --version`. If ruff is missing: `uv tool install ruff` |
 | 4 | Only the demo hooks are on | In a rehearsal, run `/hooks`. If a plugin adds its own hooks, turn it off in `~/hooks-demo/.claude/settings.local.json` (`setup_demo.sh` keeps that file) |
+| 4b | Plain Claude on stage | Your own CLAUDE.md, memory and MCP servers can show up in answers. In `~/hooks-demo/.claude/settings.local.json` set `"autoMemoryEnabled": false` and `"claudeMdExcludes": ["<home>/.claude/CLAUDE.md"]`, then start Claude with `claude --strict-mcp-config` |
 | 5 | No trust prompt on stage | Rehearse once in `~/hooks-demo` and accept the folder trust prompt. `./setup_demo.sh` keeps the same path, so the trust stays |
 | 6 | Screen | Terminal font 18 or larger. Three panes: Claude on the left, hook log top right, network watch bottom right |
 
