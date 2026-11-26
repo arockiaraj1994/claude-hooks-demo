@@ -41,6 +41,7 @@ def main() -> int:
     print("Blocked: this prompt looks like it contains", file=sys.stderr)
     for problem in problems:
         print(f"  - {problem}", file=sys.stderr)
+    print("Remove it and send the prompt again.", file=sys.stderr)
     return 2
 
 
